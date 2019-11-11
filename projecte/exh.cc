@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <fstream>
 #include <cassert>
@@ -8,6 +9,11 @@ struct player{
   string name, pos, club;
   int price, points;
 };
+
+bool operator <(const player& a, const player& b){
+  if (a.pos != b.pos) return a.pos < b.pos;
+  return a.points > b.points;
+}
 
 struct football_team{
   vector<player> por, def, mig, dav;
@@ -143,6 +149,7 @@ void find(int idx){
 
 int main(int argc, char** argv) {
   read_database(argc, argv);
+  sort(db.begin(), db.end());
   read_parameters(argc, argv);
   outputFile = argv[3];
   used = vector<bool>(db.size());
