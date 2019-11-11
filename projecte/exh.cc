@@ -16,7 +16,7 @@ bool operator <(const player& a, const player& b){
 }
 
 struct football_team{
-  vector<player> por, def, mig, dav;
+  vector<vector<player>> pos = vector<vector<player>>(4);
   int price = 0;
   int points = 0;
 };
@@ -62,31 +62,23 @@ void read_parameters(int argc, char** argv){
 
 void print(){
   ofstream f(outputFile);
-  f <<  "POR: " << team.por[0].name << endl;
-  f <<  "DEF: ";
-  for (int i = 0; i < team.def.size(); i++) {
-    f <<  (i != 0 ? ";":"") << team.def[i].name;
+  vector<string> zone = {"POR: ", "DEF: ", "MIG: ", "DAV: "};
+  for (int j = 0; j < 4;j++){
+    f << zone[j];
+    for (int i = 0; i < team.pos[j].size(); i++) {
+      f <<  (i != 0 ? ";":"") << team.pos[j][i].name;
+    }
+    f << endl;
   } 
-  f <<  endl;
-  f <<  "MIG: ";
-  for (int i = 0; i < team.mig.size(); i++) {
-    f <<  (i != 0 ? ";":"") << team.mig[i].name;
-  } 
-  f <<  endl;
-  f <<  "DAV: ";
-  for (int i = 0; i < team.dav.size(); i++) {
-    f <<  (i != 0 ? ";":"") << team.dav[i].name;
-  } 
-  f <<  endl;
-  //f <<  "Punts: " << team.points << endl;
   f <<  "Preu: " << team.price << endl;
+  f <<  "Punts: " << team.points << endl;
   f.close();
   cout << "printed" << endl;
 }
 
 bool filled(){
-  return 11 == team.por.size() + team.def.size() + team.mig.size()
-    + team.dav.size();
+  return 11 == team.pos[0].size() + team.pos[1].size() + team.pos[2].size()
+    + team.pos[3].size();
 }
 
 void find(int idx){
@@ -98,58 +90,29 @@ void find(int idx){
   } else {
     player p = db[idx];
     if (p.price <= J and p.price + team.price <= T){
-      if (p.pos == "por"){
-        if (team.por.size() < 1){
-          team.por.push_back(p);
-          team.price += p.price;
-          team.points += p.points;
-          find(idx+1);
-          team.por.pop_back();
-          team.price -= p.price;
-          team.points -= p.points;
-          find(idx+1);
+      vector<string> zone = {"por", "def", "mig", "dav"};
+      vector<int> lim = {1, n1, n2, n3};
+      for (int i = 0; i < 4; i++){
+        if (p.pos == zone[i]){
+          if (team.pos[i].size() < lim[i]){
+            team.pos[i].push_back(p);
+            team.price += p.price;
+            team.points += p.points;
+            find(idx+1);
+            team.pos[i].pop_back();
+            team.price -= p.price;
+            team.points -= p.points;
+            find(idx+1);
+          }
         }
-      } else if (p.pos == "def"){
-        if (team.def.size() < n1){
-          team.def.push_back(p);
-          team.price += p.price;
-          team.points += p.points;
-          find(idx+1);
-          team.def.pop_back();
-          team.price -= p.price;
-          team.points -= p.points;
-          find(idx+1);
-        }
-      } else if (p.pos == "mig"){
-        if (team.mig.size() < n2){
-          team.mig.push_back(p);
-          team.price += p.price;
-          team.points += p.points;
-          find(idx+1);
-          team.mig.pop_back();
-          team.price -= p.price;
-          team.points -= p.points;
-          find(idx+1);
-        }
-      } else if (p.pos == "dav"){
-        if (team.dav.size() < n3){
-          team.dav.push_back(p);
-          team.price += p.price;
-          team.points += p.points;
-          find(idx+1);
-          team.dav.pop_back();
-          team.price -= p.price;
-          team.points -= p.points;
-          find(idx+1);
-        }
-      }
+      } 
     } else find(idx+1);
   }
 }
 
 int main(int argc, char** argv) {
   read_database(argc, argv);
-  sort(db.begin(), db.end());
+  //sort(db.begin(), db.end());
   read_parameters(argc, argv);
   outputFile = argv[3];
   used = vector<bool>(db.size());
