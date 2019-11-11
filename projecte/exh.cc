@@ -12,6 +12,7 @@ struct player{
 
 bool operator <(const player& a, const player& b){
   if (a.pos != b.pos) return a.pos < b.pos;
+  if (a.points == b.points) return a.price < b.price;
   return a.points > b.points;
 }
 
