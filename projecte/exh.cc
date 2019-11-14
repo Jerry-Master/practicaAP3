@@ -81,6 +81,7 @@ void read(int argc, char** argv){
 
   in = ifstream(argv[2]);
   in >> n1 >> n2 >> n3 >> T >> J;
+  if (J > T) J = T;
   in.close();
   lim = {1, n1, n2, n3};
 }
