@@ -15,12 +15,7 @@ struct player{
   Functions for ordering players
 */
 bool operator <(const player& a, const player& b){
-  if (a.points != b.points) return a.points > b.points;
-  return a.price < b.price;
-}
-
-bool comp_price(const player& a, const player& b){
-  return a.price > b.price;
+  return a.points > b.points;
 }
 
 
@@ -38,9 +33,7 @@ struct football_team{
 */
 int n1, n2, n3, T, J;
 vector<int> lim;
-int max_points = 0;
 vector<vector<player>> db(4);
-vector<vector<player>> db_price(4);
 vector<vector<bool>> used(4);
 football_team team, dream_team;
 string outputFile;
@@ -66,7 +59,6 @@ void read(int argc, char** argv){
     getline(in,name,';');  if (name == "") break;
     getline(in,pos,';');
     in >> price;
-    if (price == 0) break;
     char aux; in >> aux;
     getline(in,club,';');
     in >> points;
@@ -115,21 +107,6 @@ void clean(){
   }
 }
 
-<<<<<<< HEAD
-void good_goalkeepers(){
-  vector<player> copy = db[0];
-  db[0] = {copy[0]};
-  int min_price = db[0][0].price;
-  for (player p : copy) {
-    if (p.points < db[0].back().points and p.price <= min_price) {
-      db[0].push_back(p);
-      min_price = p.price;
-    }
-  }
-}
-
-=======
->>>>>>> f867518337401d818ce480c5adf433777b4dcb04
 // Tells if the team is filled;
 bool filled(){
   return 11 == team.pos[0].size() + team.pos[1].size() + team.pos[2].size()
@@ -147,18 +124,6 @@ int best_points(int idx, int p, int insd){
   return points;
 }
 
-// Returns the cheapest price of the players remaining in each position
-int best_price(int idx, int p, int insd){
-  int price = 0;
-  int n = db_price[p].size()-1;
-  for (int i = 0; i < lim[p]-insd; i++) price += db_price[p][n-i].price;
-  for (int i = p+1; i < 4; i++){
-    n = db_price[i].size()-1;
-    for (int j = 0; j < lim[i]; j++) price += db_price[i][n-j].price;
-  }
-  return price;
-}
-
 /*
   Looks for the best configuration of team with
   allineation n1, n2, n3 and price no higher than T
@@ -169,12 +134,10 @@ int best_price(int idx, int p, int insd){
 void find(int idx, int p, double& t1){
   // Base case
   if (filled() or (p == 3 and idx == db[p].size())){
-    if(team.points >= max_points) {
+    if(team.points >= dream_team.points) {
       double t2 = now();
       print(t2 - t1);
-      max_points = team.points;
       dream_team = team;
-<<<<<<< HEAD
     }
   // The position p is already filled
   } else if (team.pos[p].size() == lim[p]) find(0, p+1, t1);
@@ -184,9 +147,7 @@ void find(int idx, int p, double& t1){
     // There aren't enough players to fill position p
     if (db[p].size() - idx < lim[p] - team.pos[p].size()) return;
     // The points can't be improved
-    if (best_points(idx, p, team.pos[p].size()) + team.points <= max_points) return;
-    // We can't finish the team due to price
-    //if (best_price(idx, p, team.pos[p].size()) + team.price > T) return;
+    if (best_points(idx, p, team.pos[p].size()) + team.points <= dream_team.points) return;
     int n = dream_team.pos[p].size();
     bool useless = false;
     if (n>0) useless = (pl.points <= dream_team.pos[p][n-1].points) and (pl.price > dream_team.pos[p][n-1].price);
@@ -201,34 +162,6 @@ void find(int idx, int p, double& t1){
       team.pos[p].pop_back();
       team.price -= pl.price; team.points -= pl.points;
     }
-=======
-    }
-  // The position p is already filled
-  } else if (team.pos[p].size() == lim[p]) find(0, p+1, t1);
-  // There are players remaining
-  else if (not (p < 3 and idx == db[p].size())){
-    player pl = db[p][idx];
-    // There aren't enough players to fill position p
-    if (db[p].size() - idx < lim[p] - team.pos[p].size()) return;
-    // The points can't be improved
-    if (best_points(idx, p, team.pos[p].size()) + team.points <= max_points) return;
-    // We can't finish the team due to price
-    if (best_price(idx, p, team.pos[p].size()) + team.price > T) return;
-    int n = dream_team.pos[p].size();
-    bool useless = false;
-    if (n>0) useless = (pl.points <= dream_team.pos[p][n-1].points) and (pl.price > dream_team.pos[p][n-1].price);
-    // Player is cheap enough
-    if (not useless and (pl.price + team.price <= T) and (not used[p][idx])){
-      used[p][idx] = true;
-      team.pos[p].push_back(pl);
-      team.price += pl.price; team.points += pl.points;
-      find(idx+1, p, t1);
-
-      used[p][idx] = false;
-      team.pos[p].pop_back();
-      team.price -= pl.price; team.points -= pl.points;
-    }
->>>>>>> f867518337401d818ce480c5adf433777b4dcb04
     find(idx+1, p, t1);
   }
 }
@@ -239,16 +172,7 @@ int main(int argc, char** argv) {
   clean();
   for (int i = 0; i < 4; i++) used[i] = vector<bool>(db[i].size(), false);
   for (int i = 0; i < 4; i++) sort(db[i].begin(), db[i].end());
-<<<<<<< HEAD
-  good_goalkeepers();
-=======
->>>>>>> f867518337401d818ce480c5adf433777b4dcb04
-  db_price = db;
-  for (int i = 0; i < 4; i++) sort(db_price[i].begin(), db_price[i].end(), comp_price);
   outputFile = argv[3];
   find(0, 0, t1);
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> f867518337401d818ce480c5adf433777b4dcb04
+
