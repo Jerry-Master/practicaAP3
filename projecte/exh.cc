@@ -11,16 +11,13 @@ struct player{
   int price, points;
 };
 
-/*
-  Functions for ordering players
-*/
 bool operator <(const player& a, const player& b){
   return a.points > b.points;
 }
 
 
 /*
-  Struct for storing the player of the team
+  Struct for storing the players of the team
 */
 struct football_team{
   vector<vector<player>> pos = vector<vector<player>>(4);
@@ -30,6 +27,12 @@ struct football_team{
 
 /*
   Global variables
+  n1, n2, n3, T, J: input parameters
+  lim: {1, n1, n2, n3} vector of limits
+  db: database of players separated by position
+  used: auxiliar vector to keep track of the used players in execution
+  team, dream_team: current and best-so-far team
+  outputFile: name of the output file
 */
 int n1, n2, n3, T, J;
 vector<int> lim;
@@ -44,7 +47,6 @@ double now(){
 }
 
 // Reads the database from argv[1] and stores it in db
-// Exception: Player with price 0 aren't taken into account
 void read(int argc, char** argv){
   if (argc != 4) {
     cout << "Syntax: " << argv[0] << " data_base.txt input.txt output.txt" << endl;
@@ -65,6 +67,7 @@ void read(int argc, char** argv){
     string aux2;
     getline(in,aux2);
 
+    // We split by positions
     int p = 0;
     if (pos == "def") p = 1;
     else if (pos == "mig") p = 2;
@@ -131,7 +134,7 @@ int best_points(int idx, int p, int insd){
   p: position, 0: por, 1: def, 2: mig, 3: dav
   t1: time when the program started
 */
-void find(int idx, int p, double& t1){
+void find(int idx, int p, double t1){
   // Base case
   if (filled() or (p == 3 and idx == db[p].size())){
     if(team.points >= dream_team.points) {
@@ -150,7 +153,8 @@ void find(int idx, int p, double& t1){
     if (best_points(idx, p, team.pos[p].size()) + team.points <= dream_team.points) return;
     int n = dream_team.pos[p].size();
     bool useless = false;
-    if (n>0) useless = (pl.points <= dream_team.pos[p][n-1].points) and (pl.price > dream_team.pos[p][n-1].price);
+    if (n>0) useless = (pl.points <= dream_team.pos[p][n-1].points) 
+                        and (pl.price > dream_team.pos[p][n-1].price);
     // Player is cheap enough
     if (not useless and (pl.price + team.price <= T) and (not used[p][idx])){
       used[p][idx] = true;
