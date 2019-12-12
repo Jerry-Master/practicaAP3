@@ -19,7 +19,7 @@ struct player{
 // In general point^4 is more or less similar to prices, it is a way of normalizing
 bool comp(player a, player b) {
   if (a.price*b.price == 0) return a.points > b.points;
-  return pow(a.points, 4)/pow(a.price, 1) > pow(b.points, 4)/pow(b.price, 1);
+  return pow(a.points, 4)/a.price > pow(b.points, 4)/b.price;
 }
 
 /*
