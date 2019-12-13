@@ -22,6 +22,10 @@ bool comp(player a, player b) {
   return pow(a.points, 4)/a.price > pow(b.points, 4)/b.price;
 }
 
+bool operator <(const player& a, const player& b){
+  return a.points > b.points;
+}
+
 /*
   Struct for storing the players of the team
 */
@@ -58,8 +62,13 @@ void read(int argc, char** argv){
     cout << "Syntax: " << argv[0] << " data_base.txt input.txt output.txt" << endl;
     exit(1);
   }
+
+  ifstream in(argv[2]);
+  in >> n1 >> n2 >> n3 >> T >> J;
+  if (J > T) J = T;
+  lim = {1, n1, n2, n3};
   
-  ifstream in(argv[1]);
+  in = ifstream(argv[1]);
   while (not in.eof()) {
     string name, pos, club;
     ll price, points;
@@ -72,16 +81,10 @@ void read(int argc, char** argv){
     in >> points;
     string aux2;
     getline(in,aux2);
-    
-    db.push_back({name, pos, club, price, points});
+    if (price <= J) db.push_back({name, pos, club, price, points});
 
   }
-  
-  in = ifstream(argv[2]);
-  in >> n1 >> n2 >> n3 >> T >> J;
-  if (J > T) J = T;
   in.close();
-  lim = {1, n1, n2, n3};
 }
 
 // Outputs the team in the format asked into the outputFile
@@ -110,9 +113,16 @@ void clean(){
   }
 }
 
+// Tells if the team is filled;
+bool filled(){
+  return 11 == dream_team.pos[0].size() + dream_team.pos[1].size() + dream_team.pos[2].size()
+    + dream_team.pos[3].size();
+}
+
 // fills the dream team
 void fill(double t1){
   for (int i = 0; i < db.size(); i++){
+    if (filled()) break;
     if (db[i].price + dream_team.price > T) continue;
     if (db[i].pos == "por" and dream_team.pos[0].size() < lim[0]){
       dream_team.pos[0].push_back(db[i]);
@@ -138,7 +148,7 @@ void fill(double t1){
 int main(int argc, char** argv) {
   double t1 = now();
   read(argc, argv);
-  clean();
+  //clean();
   sort(db.begin(), db.end(), comp);
   outputFile = argv[3];
   fill(t1);
