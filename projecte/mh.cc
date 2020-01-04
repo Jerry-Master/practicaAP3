@@ -46,7 +46,6 @@ double now(){
 }
 
 // Reads the database from argv[1] and stores it in db
-// Reads the database from argv[1] and stores it in db
 void read(int argc, char** argv){
   if (argc != 4) {
     cout << "Syntax: " << argv[0] << " data_base.txt input.txt output.txt" << endl;
@@ -108,10 +107,11 @@ void print(double t){
 
 // Tells if the team is filled;
 bool filled(){
-  return 11 == dream_team.pos[0].size() + dream_team.pos[1].size() + dream_team.pos[2].size()
-    + dream_team.pos[3].size();
+  return 11 == dream_team.pos[0].size() + dream_team.pos[1].size() 
+    + dream_team.pos[2].size() + dream_team.pos[3].size();
 }
 
+// Fills the team randomly
 void fill_random(double t1) {
   while (not filled()) {
     int pos;
@@ -130,82 +130,15 @@ void fill_random(double t1) {
   print(now()-t1);
 }
 
-/*
-// fills the dream team
-void fill(double t1){
-  vector<player> todos;
-  for (auto f : db) for (auto p : f) todos.push_back(p);
-  //sort(todos.begin(), todos.end(), comp);
-  for (int i = 0; i < todos.size(); i++){
-    if (todos[i].price + dream_team.price > T) continue;
-    if (todos[i].pos == "por" and dream_team.pos[0].size() < lim[0]){
-      dream_team.pos[0].push_back(todos[i]);
-      dream_team.price += todos[i].price;
-      dream_team.points += todos[i].points;
-      used[0][todos[i].idx] = true;
-    } else if (todos[i].pos == "def" and dream_team.pos[1].size() < lim[1]){
-      dream_team.pos[1].push_back(todos[i]);
-      dream_team.price += todos[i].price;
-      dream_team.points += todos[i].points;
-      used[1][todos[i].idx] = true;
-    } else if (todos[i].pos == "mig" and dream_team.pos[2].size() < lim[2]){
-      dream_team.pos[2].push_back(todos[i]);
-      dream_team.price += todos[i].price;
-      dream_team.points += todos[i].points;
-      used[2][todos[i].idx] = true;
-    } else if (todos[i].pos == "dav" and dream_team.pos[3].size() < lim[3]){
-      dream_team.pos[3].push_back(todos[i]);
-      dream_team.price += todos[i].price;
-      dream_team.points += todos[i].points;
-      used[3][todos[i].idx] = true;
-    }
-  }
-  print(now()-t1);
-}
-*/
-
-/*
-int neighborhood(int pos, int i, int n) {
-  int j;
-  do {
-    j = rand() % db[pos].size();
-  } while (used[pos][j]);
-  //while (j < 0 or j >= db[pos].size() or used[pos][j]) j = i + rand()%(2*n) - n;
-  return j;
-}
-*/
-
-/*
-void update(football_team& aux) {
-  int i = rand()%11;
-  int pos = 0;
-  if (i > n1 + n2) {
-      pos = 3; i -= n1+n2+1;
-  } else if (i > n1) {
-      pos = 2; i -= n1+1;
-  } else if (i > 0) {
-      pos = 1; i -= 1;
-  }
-  player p = aux.pos[pos][i];
-  int j;
-  do {
-    j = neighborhood(pos, p.idx, 10);
-  } while (db[pos][j].price - p.price + aux.price > T);
-  aux.pos[pos][i] = db[pos][j];
-  aux.points += db[pos][j].points - p.points;
-  aux.price += db[pos][j].price - p.price;
-  used[pos][p.idx] = false; used[pos][j] = true; 
-}
-*/
-
-
+// Computes a simulated annealing to fill the dream team, trying to obtain the 
+// maximum number of points as possible without exceeding the price constraints.
 void simulated_annealing(double temp, double alpha, double zero) {
   double t1 = now();
   fill_random(t1);
   football_team copy = dream_team;
   while (temp > zero) {
-    football_team aux = copy;
-    // update(aux);
+    football_team aux = copy; // aux team will be updated trying to improve copy
+    
     int i = rand()%11; // player of the current team that will be replaced
     int pos = 0;
     if (i > n1 + n2) {pos = 3; i -= n1+n2+1;}
@@ -213,6 +146,7 @@ void simulated_annealing(double temp, double alpha, double zero) {
     else if (i > 0) {pos = 1; i -= 1;}
     player p = aux.pos[pos][i];
     used[pos][p.idx] = false;
+
     int j;
     do {
       j = rand() % db[pos].size(); // neighborhood
@@ -222,14 +156,14 @@ void simulated_annealing(double temp, double alpha, double zero) {
     aux.points += db[pos][j].points - p.points;
     aux.price += db[pos][j].price - p.price;
     
+    // check whether the team should be updated or not
     if (aux.points > copy.points) {
       copy = aux; used[pos][j] = true;
       if (copy.points > dream_team.points) {
         dream_team = copy;
         print(now()-t1);
       }
-    }
-    else {
+    } else {
       double prob = exp(-(copy.points - aux.points)/temp); // Boltzamnn distribution
       if (rand() < prob*RAND_MAX) {
         copy = aux; used[pos][j] = true;
@@ -242,5 +176,6 @@ void simulated_annealing(double temp, double alpha, double zero) {
 int main(int argc, char** argv) {
   read(argc, argv);
   outputFile = argv[3];
+  // the parameters may be modified as needed
   simulated_annealing(1e15, 0.9999, 1e-15);
 }
