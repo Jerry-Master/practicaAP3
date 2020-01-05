@@ -82,9 +82,7 @@ void read(int argc, char** argv){
   in.close();
   lim = {1, n1, n2, n3};
 
-  //clean();
   for (ll i = 0; i < 4; ++i) used[i] = vector<bool>(db[i].size(), false);
-  //for (ll i = 0; i < 4; ++i) sort(db[i].begin(), db[i].end(), comp);
   for (ll i = 0; i < 4; ++i) for (ll j = 0; j < db[i].size(); ++j) db[i][j].idx = j;
 }
 
